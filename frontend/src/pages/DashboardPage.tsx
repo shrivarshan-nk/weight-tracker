@@ -136,7 +136,7 @@ export default function DashboardPage() {
           {isLoading ? (
             <Skeleton variant="rectangular" height={260} sx={{ borderRadius: 1 }} />
           ) : (
-            <WeightChart entries={entries} from={fromDate} to={toDate} />
+            <WeightChart entries={entries} from={fromDate} to={toDate} duration={duration} />
           )}
         </Box>
 

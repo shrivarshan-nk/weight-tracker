@@ -10,25 +10,33 @@ import {
   YAxis,
 } from "recharts";
 import type { WeightLog } from "../../api/weightApi";
+import type { DurationKey } from "../../hooks/useWeightData";
 
 interface Props {
   entries: WeightLog[];
   from: dayjs.Dayjs;
   to: dayjs.Dayjs;
+  duration: DurationKey;
 }
 
-interface ChartPoint {
+interface DatePoint {
   date: string;
   weight: number | null;
 }
 
-function buildChartData(entries: WeightLog[], from: dayjs.Dayjs, to: dayjs.Dayjs): ChartPoint[] {
+interface TsPoint {
+  ts: number;
+  weight: number;
+}
+
+function buildDateData(entries: WeightLog[], from: dayjs.Dayjs, to: dayjs.Dayjs): DatePoint[] {
+  // Last entry per day wins
   const byDate = new Map<string, number>();
   for (const e of entries) {
     const d = dayjs(e.logged_at).format("YYYY-MM-DD");
     byDate.set(d, e.weight_kg);
   }
-  const points: ChartPoint[] = [];
+  const points: DatePoint[] = [];
   let cursor = from.startOf("day");
   while (cursor.isBefore(to) || cursor.isSame(to, "day")) {
     const key = cursor.format("YYYY-MM-DD");
@@ -38,9 +46,28 @@ function buildChartData(entries: WeightLog[], from: dayjs.Dayjs, to: dayjs.Dayjs
   return points;
 }
 
-export default function WeightChart({ entries, from, to }: Props) {
-  const data = buildChartData(entries, from, to);
+function buildTsData(entries: WeightLog[]): TsPoint[] {
+  return [...entries]
+    .sort((a, b) => dayjs(a.logged_at).valueOf() - dayjs(b.logged_at).valueOf())
+    .map((e) => ({ ts: dayjs(e.logged_at).valueOf(), weight: e.weight_kg }));
+}
+
+export default function WeightChart({ entries, from, to, duration }: Props) {
+  const useTimestamps = duration === "24H" || duration === "1W";
+  const data = useTimestamps ? buildTsData(entries) : buildDateData(entries, from, to);
   const hasData = entries.length > 0;
+
+  const domainStart = from.startOf("day").valueOf();
+  const domainEnd = to.endOf("day").valueOf();
+
+  // X ticks: hourly for 24H, noon-of-day for 1W
+  const xTicks: number[] = useTimestamps
+    ? duration === "24H"
+      ? [0, 6, 12, 18, 24].map((h) => from.startOf("day").add(h, "hour").valueOf())
+      : Array.from({ length: 7 }, (_, i) =>
+          from.startOf("day").add(i, "day").add(12, "hour").valueOf()
+        )
+    : [];
 
   return (
     <Box sx={{ width: "100%", height: 280, position: "relative" }}>
@@ -61,7 +88,7 @@ export default function WeightChart({ entries, from, to }: Props) {
         </Box>
       )}
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 24, left: 0, bottom: 8 }}>
+        <AreaChart data={data as object[]} margin={{ top: 10, right: 24, left: 0, bottom: 8 }}>
           <defs>
             <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.25} />
@@ -69,14 +96,34 @@ export default function WeightChart({ entries, from, to }: Props) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#ede9ff" />
-          <XAxis
-            dataKey="date"
-            tickFormatter={(v) => dayjs(v).format("MMM D")}
-            tick={{ fontSize: 12, fill: "#888" }}
-            axisLine={false}
-            tickLine={false}
-            interval="preserveStartEnd"
-          />
+
+          {useTimestamps ? (
+            <XAxis
+              dataKey="ts"
+              type="number"
+              scale="time"
+              domain={[domainStart, domainEnd]}
+              ticks={xTicks}
+              tickFormatter={(v: number) =>
+                duration === "24H"
+                  ? dayjs(v).format("h A")
+                  : dayjs(v).format("ddd")
+              }
+              tick={{ fontSize: 12, fill: "#888" }}
+              axisLine={false}
+              tickLine={false}
+            />
+          ) : (
+            <XAxis
+              dataKey="date"
+              tickFormatter={(v) => dayjs(v).format("MMM D")}
+              tick={{ fontSize: 12, fill: "#888" }}
+              axisLine={false}
+              tickLine={false}
+              interval="preserveStartEnd"
+            />
+          )}
+
           <YAxis
             domain={["auto", "auto"]}
             tickFormatter={(v) => `${v} kg`}
@@ -87,7 +134,13 @@ export default function WeightChart({ entries, from, to }: Props) {
           />
           <Tooltip
             formatter={(value) => [`${value} kg`, "Weight"]}
-            labelFormatter={(label) => dayjs(label).format("ddd, MMM D YYYY")}
+            labelFormatter={(label) =>
+              duration === "24H"
+                ? dayjs(label).format("h:mm A")
+                : duration === "1W"
+                ? dayjs(label).format("ddd, MMM D · h:mm A")
+                : dayjs(label).format("ddd, MMM D YYYY")
+            }
             contentStyle={{
               borderRadius: 10,
               border: "none",
