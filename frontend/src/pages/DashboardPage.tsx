@@ -84,7 +84,7 @@ export default function DashboardPage() {
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
       <AppBar position="sticky" elevation={0} sx={{ color: "#fff" }}>
         <Toolbar>
-          <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1, color: "#fff" }}>
+          <Typography variant="h6" sx={{ flexGrow: 1, color: "#fff", fontWeight: 700 }}>
             Weight Tracker
           </Typography>
           <Button
@@ -124,7 +124,7 @@ export default function DashboardPage() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
               Weight Over Time
             </Typography>
             <DurationSelector value={duration} onChange={handleDurationChange} />
@@ -148,7 +148,7 @@ export default function DashboardPage() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
               Daily Log
             </Typography>
             {isLoading && <CircularProgress size={18} sx={{ ml: 1.5 }} />}

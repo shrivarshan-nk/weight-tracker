@@ -24,7 +24,7 @@ export default function EntryRow({ entry, onEdit, onDelete }: Props) {
       }}
     >
       <Box>
-        <Typography variant="body2" fontWeight={600}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
           {entry.weight_kg} kg
         </Typography>
         <Typography variant="caption" color="text.secondary">

@@ -15,6 +15,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://weight-tracker-976571215968.asia-south1.run.app",  # Cloud Run (self, for health checks)
+        # Add your Vercel URL here once deployed, e.g.:
+        # "https://weight-tracker-xxx.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],

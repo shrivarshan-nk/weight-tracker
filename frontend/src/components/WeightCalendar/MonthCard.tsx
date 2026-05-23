@@ -47,7 +47,7 @@ export default function MonthCard({ monthIndex, monthName, year, entries, onClic
     >
       <CardActionArea onClick={onClick} sx={{ p: 0 }}>
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Typography variant="subtitle1" fontWeight={700} color={color.text}>
+          <Typography variant="subtitle1" color={color.text} sx={{ fontWeight: 700 }}>
             {monthName}
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -55,11 +55,11 @@ export default function MonthCard({ monthIndex, monthName, year, entries, onClic
           </Typography>
           {entries.length > 0 ? (
             <Box sx={{ mt: 0.75 }}>
-              <Typography variant="caption" color="text.secondary" display="block">
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                 {entries.length} {entries.length === 1 ? "entry" : "entries"}
               </Typography>
               {avg && (
-                <Typography variant="caption" fontWeight={700} color={color.text}>
+                <Typography variant="caption" color={color.text} sx={{ fontWeight: 700 }}>
                   avg {avg} kg
                 </Typography>
               )}

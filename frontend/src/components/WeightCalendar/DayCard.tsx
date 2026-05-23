@@ -50,7 +50,7 @@ export default function DayCard({ date, entries, onEdit, onDelete, onAdd }: Prop
           {/* Date number + add icon */}
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.25 }}>
             <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
-              <Typography variant="body2" fontWeight={700} color={color.text} sx={{ lineHeight: 1 }}>
+              <Typography variant="body2" color={color.text} sx={{ lineHeight: 1, fontWeight: 700 }}>
                 {date.format("D")}
               </Typography>
               {date.date() === 1 && (

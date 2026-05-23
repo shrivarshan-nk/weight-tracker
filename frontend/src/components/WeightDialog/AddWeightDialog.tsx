@@ -76,7 +76,7 @@ export default function AddWeightDialog({ open, initialDate, onClose, onSave }: 
             type="number"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
-            inputProps={{ step: "0.1", min: "0" }}
+            slotProps={{ input: { inputProps: { step: "0.1", min: "0" } } }}
             error={!!error && !weightKg}
             autoFocus
             fullWidth

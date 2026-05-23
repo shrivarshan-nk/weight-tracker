@@ -27,10 +27,10 @@ export default function LoginPage() {
           width: "100%",
         }}
       >
-        <Typography variant="h4" fontWeight={700} color="primary">
+        <Typography variant="h4" color="primary" sx={{ fontWeight: 700 }}>
           Weight Tracker
         </Typography>
-        <Typography variant="body2" color="text.secondary" textAlign="center">
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
           Sign in with Google to start tracking your weight.
         </Typography>
         <GoogleLogin

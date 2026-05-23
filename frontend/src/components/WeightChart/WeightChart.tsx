@@ -86,7 +86,7 @@ export default function WeightChart({ entries, from, to }: Props) {
             width={64}
           />
           <Tooltip
-            formatter={(value: number) => [`${value} kg`, "Weight"]}
+            formatter={(value) => [`${value} kg`, "Weight"]}
             labelFormatter={(label) => dayjs(label).format("ddd, MMM D YYYY")}
             contentStyle={{
               borderRadius: 10,
