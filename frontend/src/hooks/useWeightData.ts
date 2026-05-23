@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Dayjs } from "dayjs";
 import { weightApi, type WeightLog, type WeightLogCreate, type WeightLogUpdate } from "../api/weightApi";
 
-export type DurationKey = "1W" | "1M" | "1Y";
+export type DurationKey = "24H" | "1W" | "1M" | "1Y";
 
 export function useWeightData(from: Dayjs, to: Dayjs) {
   const [entries, setEntries] = useState<WeightLog[]>([]);

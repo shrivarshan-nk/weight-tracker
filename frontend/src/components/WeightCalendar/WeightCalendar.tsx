@@ -1,6 +1,6 @@
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Button, Chip, IconButton, Stack, Typography } from "@mui/material";
 import dayjs, { type Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import type { WeightLog } from "../../api/weightApi";
@@ -72,6 +72,11 @@ export default function WeightCalendar({
 
   // Navigation title
   const title = useMemo(() => {
+    if (duration === "24H") {
+      if (currentDate.isSame(dayjs(), "day")) return "Today · " + currentDate.format("MMM D, YYYY");
+      if (currentDate.isSame(dayjs().subtract(1, "day"), "day")) return "Yesterday · " + currentDate.format("MMM D, YYYY");
+      return currentDate.format("ddd, MMM D YYYY");
+    }
     if (duration === "1W") {
       const s = currentDate.startOf("week");
       const e = s.add(6, "day");
@@ -85,7 +90,8 @@ export default function WeightCalendar({
   }, [duration, currentDate, expandedMonth, isExpanded]);
 
   const goBack = () => {
-    if (duration === "1W") onPageChange(currentDate.subtract(1, "week"));
+    if (duration === "24H") onPageChange(currentDate.subtract(1, "day"));
+    else if (duration === "1W") onPageChange(currentDate.subtract(1, "week"));
     else if (duration === "1M") onPageChange(currentDate.subtract(1, "month"));
     else if (isExpanded) {
       const prev = expandedMonth! - 1;
@@ -96,7 +102,9 @@ export default function WeightCalendar({
   };
 
   const goForward = () => {
-    if (duration === "1W") onPageChange(currentDate.add(1, "week"));
+    if (duration === "24H") {
+      if (!currentDate.isSame(dayjs(), "day")) onPageChange(currentDate.add(1, "day"));
+    } else if (duration === "1W") onPageChange(currentDate.add(1, "week"));
     else if (duration === "1M") onPageChange(currentDate.add(1, "month"));
     else if (isExpanded) {
       const next = expandedMonth! + 1;
@@ -118,6 +126,109 @@ export default function WeightCalendar({
     if (isExpanded) return buildMonthCells(currentDate.month(expandedMonth!));
     return [];
   }, [duration, currentDate, expandedMonth, isExpanded]);
+
+  // Day-detail view for 24H
+  const renderDayDetail = () => {
+    const dateStr = currentDate.format("YYYY-MM-DD");
+    const dayEntries = [...(byDate.get(dateStr) ?? [])].sort((a, b) =>
+      a.logged_at.localeCompare(b.logged_at)
+    );
+    const dayColors = [
+      { bg: "#F3F0FF", border: "#C4B9FF", text: "#6C63FF" },
+      { bg: "#E8FBF8", border: "#9DE8DF", text: "#00897B" },
+      { bg: "#FFF4E5", border: "#FFD699", text: "#E65100" },
+      { bg: "#FCE4EC", border: "#F48FB1", text: "#C2185B" },
+      { bg: "#E8F5E9", border: "#A5D6A7", text: "#2E7D32" },
+      { bg: "#E3F2FD", border: "#90CAF9", text: "#1565C0" },
+      { bg: "#FDE7FA", border: "#E0A0D8", text: "#8E24AA" },
+    ];
+    const color = currentDate.isSame(dayjs(), "day")
+      ? { bg: "#EDE9FF", border: "#6C63FF", text: "#6C63FF" }
+      : dayColors[currentDate.day()];
+
+    return (
+      <Box
+        sx={{
+          bgcolor: color.bg,
+          border: `1.5px solid ${color.border}`,
+          borderRadius: 3,
+          p: 2.5,
+          minHeight: 180,
+        }}
+      >
+        {dayEntries.length === 0 ? (
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography color="text.secondary" sx={{ mb: 1.5 }}>
+              No entries for this day
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => onAdd(currentDate)}
+              sx={{ borderColor: color.border, color: color.text }}
+            >
+              + Add entry
+            </Button>
+          </Box>
+        ) : (
+          <Stack spacing={1.5}>
+            {dayEntries.map((entry) => (
+              <Box
+                key={entry.id}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  bgcolor: "background.paper",
+                  borderRadius: 2,
+                  px: 2,
+                  py: 1.25,
+                  boxShadow: `0 1px 6px ${color.border}55`,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: color.text }}>
+                    {entry.weight_kg} kg
+                  </Typography>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                      {dayjs(entry.logged_at).format("h:mm A")}
+                    </Typography>
+                    {entry.note && (
+                      <Typography variant="caption" color="text.secondary">
+                        {entry.note}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                  <Chip
+                    label="Edit"
+                    size="small"
+                    onClick={() => onEdit(entry)}
+                    sx={{ bgcolor: color.border, color: color.text, fontWeight: 600, cursor: "pointer" }}
+                  />
+                  <Chip
+                    label="Delete"
+                    size="small"
+                    onClick={() => onDelete(entry)}
+                    sx={{ cursor: "pointer" }}
+                  />
+                </Box>
+              </Box>
+            ))}
+            <Button
+              size="small"
+              onClick={() => onAdd(currentDate)}
+              sx={{ alignSelf: "flex-start", color: color.text }}
+            >
+              + Add another
+            </Button>
+          </Stack>
+        )}
+      </Box>
+    );
+  };
 
   // Shared grid renderer for week and month views
   const renderDayGrid = (cells: (Dayjs | null)[]) => (
@@ -214,11 +325,17 @@ export default function WeightCalendar({
         >
           {title}
         </Typography>
-        <IconButton onClick={goForward} size="small" sx={{ color: "primary.main" }}>
+        <IconButton
+          onClick={goForward}
+          size="small"
+          disabled={duration === "24H" && currentDate.isSame(dayjs(), "day")}
+          sx={{ color: "primary.main" }}
+        >
           <ChevronRightIcon />
         </IconButton>
       </Box>
 
+      {duration === "24H" && renderDayDetail()}
       {duration === "1W" && renderDayGrid(weekCells)}
       {duration === "1M" && renderDayGrid(monthCells)}
       {isYearView && !isExpanded && renderYearOverview()}

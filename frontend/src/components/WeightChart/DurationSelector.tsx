@@ -7,6 +7,7 @@ interface Props {
 }
 
 const options: { label: string; value: DurationKey }[] = [
+  { label: "24 Hours", value: "24H" },
   { label: "1 Week", value: "1W" },
   { label: "1 Month", value: "1M" },
   { label: "1 Year", value: "1Y" },

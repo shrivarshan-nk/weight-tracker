@@ -28,6 +28,9 @@ import EditWeightDialog from "../components/WeightDialog/EditWeightDialog";
 import { type DurationKey, useWeightData } from "../hooks/useWeightData";
 
 function computeRange(duration: DurationKey, date: Dayjs) {
+  if (duration === "24H") {
+    return { fromDate: date.startOf("day"), toDate: date.endOf("day") };
+  }
   if (duration === "1W") {
     const start = date.startOf("week");
     return { fromDate: start.startOf("day"), toDate: start.add(6, "day").endOf("day") };
@@ -41,7 +44,7 @@ function computeRange(duration: DurationKey, date: Dayjs) {
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
-  const [duration, setDuration] = useState<DurationKey>("1W");
+  const [duration, setDuration] = useState<DurationKey>("24H");
   const [currentDate, setCurrentDate] = useState(dayjs());
 
   const { fromDate, toDate } = useMemo(
