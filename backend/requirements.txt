@@ -6,5 +6,6 @@ alembic
 pydantic-settings
 python-dotenv
 google-auth
+requests
 python-jose[cryptography]
 passlib[bcrypt]
